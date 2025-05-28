@@ -1,0 +1,7 @@
+project_id     = "your-gcp-project-id"
+region         = "us-central1"
+zone           = "us-central1-a"
+instance_name  = "demo-instance"
+machine_type   = "e2-medium"
+network        = "default"
+subnetwork     = "default"

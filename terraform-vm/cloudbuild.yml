@@ -1,0 +1,30 @@
+steps:
+  - name: 'hashicorp/terraform:1.5.7'
+    id: Init
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        terraform init
+
+  - name: 'hashicorp/terraform:1.5.7'
+    id: Plan
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        echo "$$TFVARS_JSON" > terraform.auto.tfvars.json
+        terraform plan -input=false -out=tfplan
+
+  - name: 'hashicorp/terraform:1.5.7'
+    id: Apply
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        terraform apply -auto-approve tfplan
+
+substitutions:
+  _TFVARS_JSON: '{}'
+
+timeout: 1200s
