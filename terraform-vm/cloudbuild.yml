@@ -24,9 +24,6 @@ steps:
       - |
         terraform apply -auto-approve tfplan
 
-substitutions:
-  _TFVARS_JSON: '{}'
-
 options:
   logging: CLOUD_LOGGING_ONLY 
 
