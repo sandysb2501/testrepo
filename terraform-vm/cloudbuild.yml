@@ -1,4 +1,26 @@
+# cloudbuild.yaml
+substitutions:
+  # This will be set at trigger time, e.g.
+  # _TFVARS_FILE="123abc456def.tfvars"
+  # The trigger JSON or gcloud CLI must supply it.
+  _TFVARS_FILE: ""
+
 steps:
+  # 0) Fetch the .tfvars from your bucket
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: FetchTFVars
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        if [[ -z "${_TFVARS_FILE}" ]]; then
+          echo "❌ _TFVARS_FILE substitution not set!"
+          exit 1
+        fi
+        echo "Downloading tfvars: ${_TFVARS_FILE}"
+        gsutil cp "gs://terraform_folder/tfvars/${_TFVARS_FILE}" .
+
+  # 1) Terraform init
   - name: 'hashicorp/terraform:1.5.7'
     id: Init
     entrypoint: 'sh'
@@ -7,15 +29,18 @@ steps:
       - |
         terraform init
 
+  # 2) Terraform plan (using the file we just downloaded)
   - name: 'hashicorp/terraform:1.5.7'
     id: Plan
     entrypoint: 'sh'
     args:
       - '-c'
       - |
-        echo "$$TFVARS_JSON" > terraform.auto.tfvars.json
-        terraform plan -input=false -out=tfplan
+        terraform plan \
+          -var-file="${_TFVARS_FILE}" \
+          -out=tfplan
 
+  # 3) Terraform apply
   - name: 'hashicorp/terraform:1.5.7'
     id: Apply
     entrypoint: 'sh'
@@ -25,6 +50,5 @@ steps:
         terraform apply -auto-approve tfplan
 
 options:
-  logging: CLOUD_LOGGING_ONLY 
-
+  logging: CLOUD_LOGGING_ONLY
 timeout: 1200s
