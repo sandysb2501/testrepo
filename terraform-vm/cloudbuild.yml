@@ -27,6 +27,7 @@ steps:
       - "-c"
       - |
         terraform plan -var-file="terraform.tfvars" -out=plan.out
+        terraform show -no-color plan.out > tfplan.txt
     dir: terraform-vm
 
   # Step 4: Upload plan.out to GCS using Cloud SDK
@@ -36,7 +37,7 @@ steps:
     args:
       - "-c"
       - |
-        gsutil cp plan.out gs://terraform_folder/tfvars/plan.out
+        gsutil cp plan.out gs://terraform_folder/tfvars/tfplan.txt
     dir: terraform-vm
 
 
