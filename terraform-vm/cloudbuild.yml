@@ -10,7 +10,7 @@ steps:
     dir: terraform-vm
 
   # Step 2: Terraform init
-  - name: hashicorp/terraform:light
+  - name: hashicorp/terraform:1.12
     id: Init
     entrypoint: "sh"
     args:
@@ -20,14 +20,14 @@ steps:
     dir: terraform-vm
 
   # Step 3: Terraform plan and save plan.out
-  - name: hashicorp/terraform:light
+  - name: hashicorp/terraform:1.12
     id: Plan
     entrypoint: "sh"
     args:
       - "-c"
       - |
-        terraform plan -var-file="terraform.tfvars" -out=plan.out
-        terraform show -no-color plan.out > tfplan.txt
+        terraform plan -var-file="terraform.tfvars" -out=tfplan
+        terraform show -no-color tfplan > tfplan.txt
     dir: terraform-vm
 
   # Step 4: Upload plan.out to GCS using Cloud SDK
