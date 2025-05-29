@@ -37,7 +37,7 @@ steps:
     args:
       - "-c"
       - |
-        gsutil cp plan.out gs://terraform_folder/tfvars/tfplan.txt
+        gsutil cp tfplan.txt gs://terraform_folder/tfvars/tfplan.txt
     dir: terraform-vm
 
 
