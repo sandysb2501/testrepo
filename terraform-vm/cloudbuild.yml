@@ -1,5 +1,5 @@
 steps:
-  # Step 1: Download tfvars from GCS
+  # Step 1: Download tfvars from GCS using Cloud SDK
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: Download tfvars
     entrypoint: "sh"
@@ -19,16 +19,26 @@ steps:
         terraform init
     dir: terraform-vm
 
-  # Step 3: Terraform plan using downloaded tfvars
+  # Step 3: Terraform plan and save plan.out
   - name: hashicorp/terraform:light
     id: Plan
     entrypoint: "sh"
     args:
       - "-c"
       - |
-        terraform plan -var-file="terraform.tfvars" > plan.out
+        terraform plan -var-file="terraform.tfvars" -out=plan.out
+    dir: terraform-vm
+
+  # Step 4: Upload plan.out to GCS using Cloud SDK
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: Upload plan
+    entrypoint: "sh"
+    args:
+      - "-c"
+      - |
         gsutil cp plan.out gs://terraform_folder/tfvars/plan.out
     dir: terraform-vm
+
 
   # Step 4: Terraform apply
   # - name: hashicorp/terraform:light
