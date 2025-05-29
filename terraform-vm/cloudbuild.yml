@@ -30,14 +30,14 @@ steps:
     dir: terraform-vm
 
   # Step 4: Terraform apply
-  - name: hashicorp/terraform:light
-    id: Apply
-    entrypoint: "sh"
-    args:
-      - "-c"
-      - |
-        terraform apply -auto-approve -var-file="terraform.tfvars"
-    dir: terraform-vm
+  # - name: hashicorp/terraform:light
+  #   id: Apply
+  #   entrypoint: "sh"
+  #   args:
+  #     - "-c"
+  #     - |
+  #       terraform apply -auto-approve -var-file="terraform.tfvars"
+  #   dir: terraform-vm
 
 options:
   logging: CLOUD_LOGGING_ONLY
