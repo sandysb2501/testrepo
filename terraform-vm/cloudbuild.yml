@@ -35,5 +35,6 @@ steps:
       - |
         terraform apply -auto-approve -var-file="terraform.tfvars"
 
-# Optionally set working directory if needed:
-# workingDir: path/to/terraform/code
+options:
+  logging: CLOUD_LOGGING_ONLY
+timeout: 1200s
