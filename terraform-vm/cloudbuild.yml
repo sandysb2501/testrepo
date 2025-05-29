@@ -7,6 +7,7 @@ steps:
       - "-c"
       - |
         gsutil cp gs://terraform_folder/tfvars/terraform.tfvars .
+    dir: terraform-vm
 
   # Step 2: Terraform init
   - name: hashicorp/terraform:light
@@ -16,6 +17,7 @@ steps:
       - "-c"
       - |
         terraform init
+    dir: terraform-vm
 
   # Step 3: Terraform plan using downloaded tfvars
   - name: hashicorp/terraform:light
@@ -25,6 +27,7 @@ steps:
       - "-c"
       - |
         terraform plan -var-file="terraform.tfvars"
+    dir: terraform-vm
 
   # Step 4: Terraform apply
   - name: hashicorp/terraform:light
@@ -34,6 +37,7 @@ steps:
       - "-c"
       - |
         terraform apply -auto-approve -var-file="terraform.tfvars"
+    dir: terraform-vm
 
 options:
   logging: CLOUD_LOGGING_ONLY
