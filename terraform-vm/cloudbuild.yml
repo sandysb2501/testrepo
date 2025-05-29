@@ -1,54 +1,39 @@
-# cloudbuild.yaml
-substitutions:
-  # This will be set at trigger time, e.g.
-  # _TFVARS_FILE="123abc456def.tfvars"
-  # The trigger JSON or gcloud CLI must supply it.
-  _TFVARS_FILE: ""
-
 steps:
-  # 0) Fetch the .tfvars from your bucket
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: FetchTFVars
-    entrypoint: 'bash'
+  # Step 1: Download tfvars from GCS
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: Download tfvars
+    entrypoint: "sh"
     args:
-      - '-c'
+      - "-c"
       - |
-        if [[ -z "${_TFVARS_FILE}" ]]; then
-          echo "❌ _TFVARS_FILE substitution not set!"
-          exit 1
-        fi
-        echo "Downloading tfvars: ${_TFVARS_FILE}"
-        gsutil cp "gs://terraform_folder/tfvars/${_TFVARS_FILE}" .
+        gsutil cp gs://terraform_folder/tfvars/terraform.tfvars .
 
-  # 1) Terraform init
-  - name: 'hashicorp/terraform:1.5.7'
+  # Step 2: Terraform init
+  - name: hashicorp/terraform:light
     id: Init
-    entrypoint: 'sh'
+    entrypoint: "sh"
     args:
-      - '-c'
+      - "-c"
       - |
         terraform init
 
-  # 2) Terraform plan (using the file we just downloaded)
-  - name: 'hashicorp/terraform:1.5.7'
+  # Step 3: Terraform plan using downloaded tfvars
+  - name: hashicorp/terraform:light
     id: Plan
-    entrypoint: 'sh'
+    entrypoint: "sh"
     args:
-      - '-c'
+      - "-c"
       - |
-        terraform plan \
-          -var-file="${_TFVARS_FILE}" \
-          -out=tfplan
+        terraform plan -var-file="terraform.tfvars"
 
-  # 3) Terraform apply
-  - name: 'hashicorp/terraform:1.5.7'
+  # Step 4: Terraform apply
+  - name: hashicorp/terraform:light
     id: Apply
-    entrypoint: 'sh'
+    entrypoint: "sh"
     args:
-      - '-c'
+      - "-c"
       - |
-        terraform apply -auto-approve tfplan
+        terraform apply -auto-approve -var-file="terraform.tfvars"
 
-options:
-  logging: CLOUD_LOGGING_ONLY
-timeout: 1200s
+# Optionally set working directory if needed:
+# workingDir: path/to/terraform/code
