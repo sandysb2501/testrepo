@@ -26,7 +26,8 @@ steps:
     args:
       - "-c"
       - |
-        terraform plan -var-file="terraform.tfvars"
+        terraform plan -var-file="terraform.tfvars" > plan.out
+        gsutil cp plan.out gs://terraform_folder/tfvars/plan.out
     dir: terraform-vm
 
   # Step 4: Terraform apply
