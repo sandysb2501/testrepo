@@ -1,5 +1,8 @@
+substitutions:
+  _TF_ACTION: "plan"
+
 steps:
-  # Step 1: Download tfvars from GCS using Cloud SDK
+  # Step 1: Download tfvars
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: Download tfvars
     entrypoint: "sh"
@@ -15,41 +18,27 @@ steps:
     entrypoint: "sh"
     args:
       - "-c"
-      - |
-        terraform init
+      - terraform init
     dir: terraform-vm
 
-  # Step 3: Terraform plan and save plan.out
+  # Step 3: Conditional Terraform plan
   - name: hashicorp/terraform:1.12
-    id: Plan
+    id: Plan or Apply
     entrypoint: "sh"
     args:
       - "-c"
       - |
-        terraform plan -var-file="terraform.tfvars" -out=tfplan
-        terraform show -no-color tfplan > tfplan.txt
+        if [ "$_TF_ACTION" = "plan" ]; then
+          terraform plan -var-file="terraform.tfvars" -out=tfplan
+          terraform show -no-color tfplan > tfplan.txt
+          gsutil cp tfplan.txt gs://terraform_folder/tfvars/tfplan.txt
+        elif [ "$_TF_ACTION" = "apply" ]; then
+          terraform apply -auto-approve -var-file="terraform.tfvars"
+        else
+          echo "❌ Unknown action: $_TF_ACTION"
+          exit 1
+        fi
     dir: terraform-vm
-
-  # Step 4: Upload plan.out to GCS using Cloud SDK
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    id: Upload plan
-    entrypoint: "sh"
-    args:
-      - "-c"
-      - |
-        gsutil cp tfplan.txt gs://terraform_folder/tfvars/tfplan.txt
-    dir: terraform-vm
-
-
-  # Step 4: Terraform apply
-  # - name: hashicorp/terraform:light
-  #   id: Apply
-  #   entrypoint: "sh"
-  #   args:
-  #     - "-c"
-  #     - |
-  #       terraform apply -auto-approve -var-file="terraform.tfvars"
-  #   dir: terraform-vm
 
 options:
   logging: CLOUD_LOGGING_ONLY
