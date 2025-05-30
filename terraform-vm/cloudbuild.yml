@@ -31,12 +31,23 @@ steps:
         if [ "$_TF_ACTION" = "plan" ]; then
           terraform plan -var-file="terraform.tfvars" -out=tfplan
           terraform show -no-color tfplan > tfplan.txt
-          gsutil cp tfplan.txt gs://terraform_folder/tfvars/tfplan.txt
         elif [ "$_TF_ACTION" = "apply" ]; then
           terraform apply -auto-approve -var-file="terraform.tfvars"
         else
           echo "❌ Unknown action: $_TF_ACTION"
           exit 1
+        fi
+    dir: terraform-vm
+  
+  # Step 4: Upload plan.txt (if exists)
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: Upload tfplan.txt
+    entrypoint: "sh"
+    args:
+      - "-c"
+      - |
+        if [ -f tfplan.txt ]; then
+          gsutil cp tfplan.txt gs://terraform_folder/tfvars/tfplan.txt
         fi
     dir: terraform-vm
 
